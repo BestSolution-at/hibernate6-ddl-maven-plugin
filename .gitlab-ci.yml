@@ -1,0 +1,9 @@
+stages:
+  - maven-verify
+
+include:
+  - project: 'BestSolution.at/gitlab-pipelines'
+    ref: 1.18.2
+    file:
+      - '/templates/maven-base.yml'
+      - '/jobs/maven/verify.yml'
