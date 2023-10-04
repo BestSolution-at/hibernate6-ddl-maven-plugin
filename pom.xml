@@ -228,4 +228,15 @@
 			</build>
 		</profile>
 	</profiles>
+	
+	<distributionManagement>
+		<repository>
+			<id>beso-private-releases</id>
+			<url>https://nexus.ci.bestsolution.at/repository/beso-private-releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>beso-private-snapshots</id>
+			<url>https://nexus.ci.bestsolution.at/repository/beso-private-snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
 </project>
