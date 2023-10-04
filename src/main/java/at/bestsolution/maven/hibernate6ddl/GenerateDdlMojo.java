@@ -37,6 +37,8 @@ import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.JdbcSettings;
+import org.hibernate.cfg.SchemaToolingSettings;
 import org.hibernate.dialect.DatabaseVersion;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.SimpleDatabaseVersion;
@@ -74,6 +76,14 @@ public class GenerateDdlMojo extends AbstractMojo {
 
 	@Parameter( defaultValue = "false" )
 	private boolean createDropStatements;
+	
+	/**
+	 * Additional properties to pass to Hibernate.
+	 * 
+	 * @see https://docs.jboss.org/hibernate/orm/6.3/userguide/html_single/Hibernate_User_Guide.html#settings
+	 */
+	@Parameter(required = false)
+    private Map<String, String> persistenceProperties;
 
 	@Parameter( defaultValue = "${project}", readonly = true )
 	private transient MavenProject project;
@@ -147,8 +157,12 @@ public class GenerateDdlMojo extends AbstractMojo {
 				}
 			}
 		} );
-		registryBuilder.applySetting( "hibernate.hbm2ddl.auto", createDropStatements ? "create-drop" : "create" );
-		registryBuilder.applySetting( "hibernate.use_sql_comments", true );
+		registryBuilder.applySetting( SchemaToolingSettings.HBM2DDL_AUTO, createDropStatements ? "create-drop" : "create" );
+		registryBuilder.applySetting( JdbcSettings.USE_SQL_COMMENTS, true );
+		
+		if (persistenceProperties != null && !persistenceProperties.isEmpty()) {
+			applyUserProperties( registryBuilder );
+		}
 		
 		final StandardServiceRegistry standardRegistry = registryBuilder.build();
         final MetadataSources metadataSources = new MetadataSources(standardRegistry);
@@ -162,7 +176,7 @@ public class GenerateDdlMojo extends AbstractMojo {
 
         final Metadata metadata = metadataSources.buildMetadata();
         
-        final SchemaExport export = new SchemaExport();
+        final SchemaExport export = new FilteredSchemaExport();
         export.setDelimiter(";");
         export.setManageNamespaces(true);
         export.setHaltOnError(true);
@@ -170,6 +184,24 @@ public class GenerateDdlMojo extends AbstractMojo {
         export.setOutputFile( outputDirectory.toPath().resolve( dialectName.replace( "@", "" ).toLowerCase() + ".sql" ).toString() );
         export.setOverrideOutputFileContent();
         export.execute(EnumSet.of(TargetType.SCRIPT), createDropStatements ? SchemaExport.Action.BOTH : SchemaExport.Action.CREATE, metadata);
+	}
+	
+	private void applyUserProperties( StandardServiceRegistryBuilder registryBuilder ) {
+        getLog().info("Applying persistence properties set in POM...");
+        persistenceProperties.entrySet().stream().filter(prop -> {
+        	if (JdbcSettings.DIALECT.equals( prop.getKey() ) ) {
+        		getLog().warn( String.format( "ignoring dialect property '%s', use the dedicated plugin option to specify dialects", prop.getKey() ) );
+        		return false;
+        	} else if ( registryBuilder.getSettings().containsKey( prop.getKey() ) ) {
+        		getLog().warn( String.format( "value for property '%s' already present, overriding current value '%s'", prop.getKey(), registryBuilder.getSettings().get( prop.getKey() ) ) );
+        		return true;
+        	} else {
+        		return true;
+        	}
+        }).forEach( prop -> {
+        	getLog().debug( String.format( "setting persistence property %s = %s", prop.getKey(), prop.getValue() ) );
+        	registryBuilder.applySetting( prop.getKey(), prop.getValue() );
+        } );
 	}
 
 }
