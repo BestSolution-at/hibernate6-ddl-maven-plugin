@@ -45,9 +45,7 @@ import org.hibernate.engine.jdbc.dialect.spi.DialectResolutionInfoSource;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
 
-import com.google.common.base.Objects;
-
-@Mojo( name = "gen-ddl", defaultPhase = LifecyclePhase.PROCESS_RESOURCES, requiresDependencyCollection = ResolutionScope.COMPILE_PLUS_RUNTIME, threadSafe = true )
+@Mojo( name = "gen-ddl", defaultPhase = LifecyclePhase.PROCESS_CLASSES, requiresDependencyCollection = ResolutionScope.COMPILE_PLUS_RUNTIME, threadSafe = true )
 public class GenerateDdlMojo extends AbstractMojo {
 
 	/**
