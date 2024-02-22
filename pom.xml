@@ -12,6 +12,23 @@
 	<packaging>maven-plugin</packaging>
 
 	<name>Maven DDL generator plugin for Hibernate 6</name>
+	<description>Generate DDL statements from JPA-Entities</description>
+	<developers>
+		<developer>
+			<name>BestSolution.at</name>
+			<email>info@bestsolution.at</email>
+		</developer>
+		<developer>
+			<name>Sebastian Sams</name>
+			<email>sebastian.sams@bestsolution.at</email>
+		</developer>
+	</developers>
+	<url>
+		https://github.com/BestSolution-at/hibernate6-ddl-maven-plugin
+	</url>
+	<scm>
+		<url>https://github.com/BestSolution-at/hibernate6-ddl-maven-plugin.git</url>
+	</scm>
 
 	<licenses>
 		<license>
